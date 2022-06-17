@@ -5,7 +5,7 @@ from tvm import te
 import timeit as ti
 
 
-BLOCK_SIZE = 8192
+BLOCK_SIZE = 1024
 
 tgt = tvm.target.Target(target="llvm -mcpu=skylake-avx512",
                         host="llvm -mcpu=skylake-avx512")
@@ -79,7 +79,7 @@ def evaluate_func(n, func, target, optimization, log):
     iter_number = n // BLOCK_SIZE
     # skip remainder for the simplicity
     #iter_rem = n % BLOCK_SIZE
-    # evaluator = func.time_evaluator(func.entry_name, dev, number=100)
+    evaluator = func.time_evaluator(func.entry_name, dev, number=10)
     mean_time = 0.0
     int64_empty = 0xFFFFFFFFFFFFFFFE
     first_filter_var = 20
@@ -90,12 +90,11 @@ def evaluate_func(n, func, target, optimization, log):
     for i in range(0, iter_number):
         src = tvm.nd.array(np.random.uniform(
             size=BLOCK_SIZE).astype(SRC.dtype), dev)
-        t = ti.Timer(lambda: func(src, first_filter_out, values, rids,
-                                  int64_empty, first_filter_var, sec_filter_var))
-        mean_time += t.timeit(number=100) / 100.
-        # mean_time += evaluator(src, first_filter_out, values, rids,
-        #                        int64_empty, first_filter_var, sec_filter_var).mean
-        #mean_time += evaluator(src, values, int64_empty, first_filter_var, sec_filter_var).mean
+        # t = ti.Timer(lambda: func(src, first_filter_out, values, rids,
+        #                           int64_empty, first_filter_var, sec_filter_var))
+        # mean_time += t.timeit(number=100) / 100.
+        mean_time += evaluator(src, first_filter_out, values, rids,
+                               int64_empty, first_filter_var, sec_filter_var).mean
     print(f'{optimization}: {n} : {mean_time:.9f}')
 
     log.append((optimization, n, mean_time))

@@ -46,7 +46,7 @@ class TVMFilterBenchFixture : public benchmark::Fixture
     // set schedule
     Schedule s = create_schedule({firstFilterOut->op, secFilterOut->op, ridsOut->op});
 
-    // build a module
+    // build a module2
     std::unordered_map<Tensor, Buffer> binds;
     auto args = Array<ObjectRef>({src, firstFilterOut, secFilterOut, ridsOut, emptyVar,
       firstFilterVar, secFilterVar});
@@ -91,7 +91,7 @@ class TVMFilterBenchFixture : public benchmark::Fixture
 
     for (int i = 0; i < shapeArr[0]; ++i)
     {
-        static_cast<int32_t*>(srcTensor->data)[i] = i;
+        static_cast<int64_t*>(srcTensor->data)[i] = i;
     }
   }
 
@@ -101,7 +101,7 @@ class TVMFilterBenchFixture : public benchmark::Fixture
     SetUp(const_cast<benchmark::State&>(state));
   }
 
-  constexpr const static size_t blockSize=8192;
+  constexpr const static size_t blockSize=1024;
   PackedFunc vecFilterFunc;
   Module vecFilterMod;
   DLTensor* srcTensor;
